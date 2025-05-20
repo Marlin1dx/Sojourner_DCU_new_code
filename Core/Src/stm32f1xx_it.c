@@ -233,7 +233,7 @@ void ADC1_2_IRQHandler(void)
 void USB_LP_CAN1_RX0_IRQHandler(void)
 {
   /* USER CODE BEGIN USB_LP_CAN1_RX0_IRQn 0 */
-  USB_CDC_ProcessReceivedData();
+  // USB_CDC_ProcessReceivedData(); // закомментировано, требуется аргументы
   /* USER CODE END USB_LP_CAN1_RX0_IRQn 0 */
   HAL_PCD_IRQHandler(&hpcd_USB_FS);
   /* USER CODE BEGIN USB_LP_CAN1_RX0_IRQn 1 */

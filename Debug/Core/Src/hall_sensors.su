@@ -1,0 +1,6 @@
+../Core/Src/hall_sensors.c:31:6:HallSensors_Init	48	static
+../Core/Src/hall_sensors.c:66:10:HallSensors_GetValue	16	static
+../Core/Src/hall_sensors.c:76:7:HallSensors_GetAngle	32	static
+../Core/Src/hall_sensors.c:90:6:HallSensors_Calibrate	16	static
+../Core/Src/hall_sensors.c:116:28:HallSensors_GetCalibrationData	16	static
+../Core/Src/hall_sensors.c:121:6:HallSensors_ProcessADC	4	static

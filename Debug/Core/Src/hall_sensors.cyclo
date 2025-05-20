@@ -1,0 +1,6 @@
+../Core/Src/hall_sensors.c:31:6:HallSensors_Init	2
+../Core/Src/hall_sensors.c:66:10:HallSensors_GetValue	2
+../Core/Src/hall_sensors.c:76:7:HallSensors_GetAngle	3
+../Core/Src/hall_sensors.c:90:6:HallSensors_Calibrate	2
+../Core/Src/hall_sensors.c:116:28:HallSensors_GetCalibrationData	2
+../Core/Src/hall_sensors.c:121:6:HallSensors_ProcessADC	1

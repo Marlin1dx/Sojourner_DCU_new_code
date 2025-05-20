@@ -1,0 +1,4 @@
+../Core/Src/motor_control.c:37:6:MotorControl_Init	40	static
+../Core/Src/motor_control.c:78:6:MotorControl_SetMotorState	16	static
+../Core/Src/motor_control.c:85:6:MotorControl_Update	32	static
+../Core/Src/motor_control.c:137:6:MotorControl_CalibrateSteering	4	static

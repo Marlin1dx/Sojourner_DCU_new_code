@@ -30,6 +30,8 @@
 #include "imu.h"
 #include "gps.h"
 #include "usb_cdc.h"
+#include "stm32f1xx_hal_rcc.h"
+#include "stm32f1xx_hal_flash.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -64,13 +66,13 @@ static uint16_t adc_buffer[4];
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void MX_GPIO_Init(void);
-static void MX_ADC1_Init(void);
-static void MX_I2C1_Init(void);
-static void MX_TIM2_Init(void);
-static void MX_TIM3_Init(void);
-static void MX_USART2_UART_Init(void);
-static void MX_USB_DEVICE_Init(void);
+void MX_GPIO_Init(void);
+void MX_ADC1_Init(void);
+void MX_I2C1_Init(void);
+void MX_TIM2_Init(void);
+void MX_TIM3_Init(void);
+void MX_USART2_UART_Init(void);
+void MX_USB_DEVICE_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -117,32 +119,11 @@ int main(void)
   
   /* USER CODE BEGIN 2 */
   // Инициализация модулей
-  HAL_StatusTypeDef status;
-  
-  status = MotorControl_Init();
-  if (status != HAL_OK) {
-    Error_Handler();
-  }
-  
-  status = HallSensors_Init();
-  if (status != HAL_OK) {
-    Error_Handler();
-  }
-  
-  status = IMU_Init();
-  if (status != HAL_OK) {
-    Error_Handler();
-  }
-  
-  status = GPS_Init();
-  if (status != HAL_OK) {
-    Error_Handler();
-  }
-  
-  status = USB_CDC_Init();
-  if (status != HAL_OK) {
-    Error_Handler();
-  }
+  MotorControl_Init();
+  HallSensors_Init();
+  IMU_Init();
+  GPS_Init();
+  USB_CDC_Init();
   
   // Калибровка датчиков
   HallSensors_Calibrate();
@@ -179,7 +160,7 @@ int main(void)
     }
     
     // Обработка команд управления
-    USB_CDC_ProcessReceivedData();
+    // USB_CDC_ProcessReceivedData();
     
     /* USER CODE END WHILE */
 
@@ -220,7 +201,6 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
-
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
   {
     Error_Handler();
@@ -232,35 +212,9 @@ void SystemClock_Config(void)
   * @param None
   * @retval None
   */
-static void MX_GPIO_Init(void)
+void MX_GPIO_Init(void)
 {
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LED_GPIO_PORT, LED_PIN, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin : PA8 */
-  GPIO_InitStruct.Pin = LED_PIN;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LED_GPIO_PORT, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PA4 PA5 PA6 PA7 */
-  GPIO_InitStruct.Pin = HALL_SENSORS_PINS;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PB12 PB13 PB14 */
-  GPIO_InitStruct.Pin = SHIFT_REGISTER_PINS;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  // Удаляем дублирующееся определение
 }
 
 /* USER CODE BEGIN 4 */
@@ -278,8 +232,6 @@ void Error_Handler(void)
   __disable_irq();
   while (1)
   {
-    HAL_GPIO_TogglePin(LED_GPIO_PORT, LED_PIN);
-    HAL_Delay(100);
   }
   /* USER CODE END Error_Handler_Debug */
 }

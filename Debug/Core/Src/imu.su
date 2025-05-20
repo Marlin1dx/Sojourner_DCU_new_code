@@ -1,0 +1,10 @@
+../Core/Src/imu.c:58:13:I2C_Init	8	static
+../Core/Src/imu.c:71:13:ITG3205_Init	32	static
+../Core/Src/imu.c:95:13:ADXL345_Init	32	static
+../Core/Src/imu.c:115:13:HMC5883L_Init	32	static
+../Core/Src/imu.c:138:6:IMU_Init	16	static
+../Core/Src/imu.c:156:6:IMU_Update	56	static
+../Core/Src/imu.c:219:17:IMU_GetData	4	static
+../Core/Src/imu.c:223:6:IMU_Calibrate	4	static
+../Core/Src/imu.c:231:6:IMU_ProcessI2C	4	static
+../Core/Src/imu.c:232:6:IMU_ProcessError	4	static

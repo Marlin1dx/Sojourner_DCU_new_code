@@ -1,4 +1,5 @@
 #include "imu.h"
+#include <math.h>
 
 // Адреса устройств на I2C
 #define ITG3205_ADDR    0x68
@@ -41,9 +42,6 @@
 #define HMC5883L_ID_A           0x0A
 #define HMC5883L_ID_B           0x0B
 #define HMC5883L_ID_C           0x0C
-
-// Дескриптор I2C
-static I2C_HandleTypeDef hi2c1;
 
 // Данные IMU
 static IMU_Data imu_data;
@@ -228,4 +226,7 @@ void IMU_Calibrate(void) {
     // 2. Вычисление смещений гироскопа
     // 3. Вычисление смещений акселерометра
     // 4. Калибровка магнитометра (сбор данных при вращении)
-} 
+}
+
+void IMU_ProcessI2C(void) {}
+void IMU_ProcessError(void) {} 

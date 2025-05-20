@@ -1,3 +1,5 @@
+#include "usb_device.h"
+#include "usbd_cdc_if.h"
 #include "usb_cdc.h"
 #include "motor_control.h"
 #include "hall_sensors.h"
@@ -5,6 +7,8 @@
 #include "gps.h"
 #include <string.h>
 #include <stdio.h>
+#include "usbd_desc.h"
+#include "main.h"
 
 // Дескриптор USB CDC
 static USBD_HandleTypeDef hUsbDeviceFS;
@@ -54,7 +58,7 @@ void USB_CDC_SendTelemetry(void) {
     const GPS_Data* gps = GPS_GetData();
     
     // Формируем строку телеметрии
-    snprintf(buffer, sizeof(buffer),
+    snprintf(buffer, sizeof(buffer), // @suppress("Float formatting support")
         "IMU:%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f|"
         "GPS:%.6f,%.6f,%.2f,%.2f,%.2f,%d,%d,%02d:%02d:%02d,%02d/%02d/%04d|"
         "HALL:%.2f,%.2f,%.2f,%.2f\n",

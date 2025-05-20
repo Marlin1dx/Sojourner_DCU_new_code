@@ -28,9 +28,6 @@ static const MotorID hall_to_motor[HALL_COUNT] = {
     MOTOR_ARR   // ARR
 };
 
-// Дескриптор ADC
-static ADC_HandleTypeDef hadc1;
-
 void HallSensors_Init(void) {
     // Включаем тактирование ADC и GPIO
     __HAL_RCC_ADC1_CLK_ENABLE();
@@ -119,4 +116,6 @@ void HallSensors_Calibrate(void) {
 const HallCalibrationData* HallSensors_GetCalibrationData(HallSensorID sensor) {
     if(sensor >= HALL_COUNT) return NULL;
     return &calibration_data[sensor];
-} 
+}
+
+void HallSensors_ProcessADC(void) {} 

@@ -1,0 +1,8 @@
+../Core/Src/gps.c:19:13:UART_Init	8	static
+../Core/Src/gps.c:32:13:ParseNMEA	80	static
+../Core/Src/gps.c:153:6:HAL_UART_RxCpltCallback	16	static
+../Core/Src/gps.c:175:6:GPS_Init	8	static
+../Core/Src/gps.c:186:6:GPS_Update	4	static
+../Core/Src/gps.c:190:17:GPS_GetData	4	static
+../Core/Src/gps.c:194:9:GPS_HasValidData	4	static
+../Core/Src/gps.c:198:6:GPS_ProcessUART	4	static

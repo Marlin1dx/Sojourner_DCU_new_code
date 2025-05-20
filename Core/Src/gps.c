@@ -1,6 +1,8 @@
+#include "main.h"
 #include "gps.h"
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 // Буфер для приема данных
 #define GPS_BUFFER_SIZE 256
@@ -11,7 +13,7 @@ static uint16_t buffer_index = 0;
 static GPS_Data gps_data;
 
 // Дескриптор UART
-static UART_HandleTypeDef huart2;
+// UART_HandleTypeDef huart2;
 
 // Инициализация UART
 static void UART_Init(void) {
@@ -191,4 +193,6 @@ const GPS_Data* GPS_GetData(void) {
 
 uint8_t GPS_HasValidData(void) {
     return (gps_data.fix > 0);
-} 
+}
+
+void GPS_ProcessUART(void) {} 
