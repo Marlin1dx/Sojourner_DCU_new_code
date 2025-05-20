@@ -195,4 +195,15 @@ uint8_t GPS_HasValidData(void) {
     return (gps_data.fix > 0);
 }
 
-void GPS_ProcessUART(void) {} 
+// Обработка данных GPS через UART
+void GPS_ProcessUART(void) {
+    // Здесь будет логика обработки входящих UART данных
+    // Например, парсинг NMEA-сообщений
+    extern UART_HandleTypeDef huart2;
+    uint8_t rx_data[1];
+    
+    if (HAL_UART_Receive(&huart2, rx_data, 1, 10) == HAL_OK) {
+        // Логика обработки принятого байта
+        // Можно добавить буферизацию и парсинг NMEA-протокола
+    }
+} 

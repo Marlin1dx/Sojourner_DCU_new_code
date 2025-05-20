@@ -32,4 +32,7 @@ const GPS_Data* GPS_GetData(void);
 // Проверка наличия валидных данных
 uint8_t GPS_HasValidData(void);
 
+// Обработка UART для GPS
+void GPS_ProcessUART(void);
+
 #endif // GPS_H 

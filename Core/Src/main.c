@@ -18,20 +18,12 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include <stdint.h>
 #include "adc.h"
 #include "i2c.h"
 #include "tim.h"
 #include "usart.h"
 #include "usb_device.h"
 #include "gpio.h"
-#include "motor_control.h"
-#include "hall_sensors.h"
-#include "imu.h"
-#include "gps.h"
-#include "usb_cdc.h"
-#include "stm32f1xx_hal_rcc.h"
-#include "stm32f1xx_hal_flash.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -58,6 +50,7 @@ extern UART_HandleTypeDef huart2;
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+
 /* USER CODE BEGIN PV */
 static uint32_t last_telemetry = 0;
 static uint8_t gps_rx_buffer[1];
@@ -66,13 +59,6 @@ static uint16_t adc_buffer[4];
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-void MX_GPIO_Init(void);
-void MX_ADC1_Init(void);
-void MX_I2C1_Init(void);
-void MX_TIM2_Init(void);
-void MX_TIM3_Init(void);
-void MX_USART2_UART_Init(void);
-void MX_USB_DEVICE_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -88,6 +74,7 @@ void MX_USB_DEVICE_Init(void);
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -116,14 +103,15 @@ int main(void)
   MX_TIM3_Init();
   MX_USART2_UART_Init();
   MX_USB_DEVICE_Init();
-  
   /* USER CODE BEGIN 2 */
   // Инициализация модулей
   MotorControl_Init();
   HallSensors_Init();
   IMU_Init();
   GPS_Init();
-  USB_CDC_Init();
+  
+  // ВАЖНО: Оставляем только один вызов инициализации USB
+  MX_USB_DEVICE_Init();
   
   // Калибровка датчиков
   HallSensors_Calibrate();
@@ -139,8 +127,8 @@ int main(void)
   // Запуск UART
   HAL_UART_Receive_IT(&huart2, gps_rx_buffer, 1);
   
-  // Запуск USB
-  MX_USB_DEVICE_Init();
+  // Добавляем отладочную информацию об инициализации USB
+  USBD_UsrLog("USB Device Initialized");
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -155,12 +143,18 @@ int main(void)
     
     // Отправка телеметрии
     if (current_time - last_telemetry >= TELEMETRY_INTERVAL) {
-      USB_CDC_SendTelemetry();
+      const IMU_Data* imu_data = IMU_GetData();
+      const GPS_Data* gps_data = GPS_GetData();
+      
+      if (imu_data != NULL && gps_data != NULL) {
+        USB_CDC_SendTelemetry(imu_data, gps_data);
+      }
+      
       last_telemetry = current_time;
     }
     
     // Обработка команд управления
-    // USB_CDC_ProcessReceivedData();
+    USB_CDC_ProcessReceivedData();
     
     /* USER CODE END WHILE */
 
@@ -177,6 +171,7 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
@@ -201,20 +196,18 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
   {
     Error_Handler();
   }
-}
-
-/**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
-void MX_GPIO_Init(void)
-{
-  // Удаляем дублирующееся определение
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_ADC|RCC_PERIPHCLK_USB;
+  PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV4;
+  PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_PLL;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+  {
+    Error_Handler();
+  }
 }
 
 /* USER CODE BEGIN 4 */

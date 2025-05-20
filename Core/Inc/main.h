@@ -28,15 +28,6 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f1xx_hal.h"
-#include "stm32f1xx_hal_rcc.h"
-#include "stm32f1xx_hal_gpio.h"
-#include "stm32f1xx_hal_i2c.h"
-#include "stm32f1xx_hal_adc.h"
-#include "stm32f1xx_hal_tim.h"
-#include "stm32f1xx_hal_uart.h"
-#include "stm32f1xx_hal_pcd.h"
-#include "stm32f1xx_hal_flash.h"
-#include "stm32f103xb.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -75,11 +66,6 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define LED_PIN GPIO_PIN_8
-#define LED_GPIO_PORT GPIOA
-#define HALL_SENSORS_PINS (GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7)
-#define SHIFT_REGISTER_PINS (GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14)
-#define TELEMETRY_INTERVAL 100
 
 /* USER CODE BEGIN Private defines */
 #define HSE_VALUE 8000000U
@@ -91,18 +77,6 @@ void Error_Handler(void);
 #define VDD_VALUE 3300U
 #define USE_SD_TRANSCEIVER 0
 
-/* RCC definitions */
-#define RCC_CR_HSEON                    ((uint32_t)0x00010000)
-#define RCC_CR_HSION                    ((uint32_t)0x00000001)
-#define RCC_CFGR_PLLSRC                 ((uint32_t)0x00010000)
-#define RCC_CFGR_PLLMULL6               ((uint32_t)0x00140000)
-#define RCC_CFGR_SW_PLL                 ((uint32_t)0x00000002)
-#define RCC_CFGR_HPRE_DIV1              ((uint32_t)0x00000000)
-#define RCC_CFGR_PPRE1_DIV2             ((uint32_t)0x00000400)
-#define RCC_CFGR_PPRE1_DIV1             ((uint32_t)0x00000000)
-
-/* FLASH definitions */
-#define FLASH_LATENCY_1                 ((uint32_t)0x00000001)
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

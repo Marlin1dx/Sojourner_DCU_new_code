@@ -31,7 +31,10 @@ float HallSensors_GetAngle(HallSensorID sensor);
 // Калибровка датчиков
 void HallSensors_Calibrate(void);
 
+// Обработка данных АЦП в прерывании
+void HallSensors_ProcessADC(void);
+
 // Получение калибровочных данных
 const HallCalibrationData* HallSensors_GetCalibrationData(HallSensorID sensor);
 
-#endif // HALL_SENSORS_H 
+#endif // HALL_SENSORS_H

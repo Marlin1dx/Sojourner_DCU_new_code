@@ -34,27 +34,18 @@
   */
 
 #define HAL_MODULE_ENABLED
-#define HAL_ADC_MODULE_ENABLED
-#define HAL_CORTEX_MODULE_ENABLED
-#define HAL_DMA_MODULE_ENABLED
-#define HAL_FLASH_MODULE_ENABLED
-#define HAL_GPIO_MODULE_ENABLED
-#define HAL_I2C_MODULE_ENABLED
-#define HAL_PCD_MODULE_ENABLED
-#define HAL_PWR_MODULE_ENABLED
-#define HAL_RCC_MODULE_ENABLED
-#define HAL_TIM_MODULE_ENABLED
-#define HAL_UART_MODULE_ENABLED
-
+  #define HAL_ADC_MODULE_ENABLED
 /*#define HAL_CRYP_MODULE_ENABLED   */
 /*#define HAL_CAN_MODULE_ENABLED   */
 /*#define HAL_CAN_LEGACY_MODULE_ENABLED   */
 /*#define HAL_CEC_MODULE_ENABLED   */
+/*#define HAL_CORTEX_MODULE_ENABLED   */
 /*#define HAL_CRC_MODULE_ENABLED   */
 /*#define HAL_DAC_MODULE_ENABLED   */
 /*#define HAL_DMA_MODULE_ENABLED   */
 /*#define HAL_ETH_MODULE_ENABLED   */
 /*#define HAL_FLASH_MODULE_ENABLED   */
+#define HAL_GPIO_MODULE_ENABLED
 #define HAL_I2C_MODULE_ENABLED
 /*#define HAL_I2S_MODULE_ENABLED   */
 /*#define HAL_IRDA_MODULE_ENABLED   */
@@ -65,6 +56,7 @@
 #define HAL_PCD_MODULE_ENABLED
 /*#define HAL_HCD_MODULE_ENABLED   */
 /*#define HAL_PWR_MODULE_ENABLED   */
+/*#define HAL_RCC_MODULE_ENABLED   */
 /*#define HAL_RTC_MODULE_ENABLED   */
 /*#define HAL_SD_MODULE_ENABLED   */
 /*#define HAL_MMC_MODULE_ENABLED   */
@@ -77,7 +69,13 @@
 /*#define HAL_USART_MODULE_ENABLED   */
 /*#define HAL_WWDG_MODULE_ENABLED   */
 
+#define HAL_CORTEX_MODULE_ENABLED
+#define HAL_DMA_MODULE_ENABLED
+#define HAL_FLASH_MODULE_ENABLED
 #define HAL_EXTI_MODULE_ENABLED
+#define HAL_GPIO_MODULE_ENABLED
+#define HAL_PWR_MODULE_ENABLED
+#define HAL_RCC_MODULE_ENABLED
 
 /* ########################## Oscillator Values adaptation ####################*/
 /**
@@ -198,18 +196,29 @@
 
 /* Section 3: Common PHY Registers */
 
-/* RCC definitions */
-#define RCC_CR_HSEON                    ((uint32_t)0x00010000)
-#define RCC_CR_HSION                    ((uint32_t)0x00000001)
-#define RCC_CFGR_PLLSRC                 ((uint32_t)0x00010000)
-#define RCC_CFGR_PLLMULL6               ((uint32_t)0x00140000)
-#define RCC_CFGR_SW_PLL                 ((uint32_t)0x00000002)
-#define RCC_CFGR_HPRE_DIV1              ((uint32_t)0x00000000)
-#define RCC_CFGR_PPRE1_DIV2             ((uint32_t)0x00000400)
-#define RCC_CFGR_PPRE1_DIV1             ((uint32_t)0x00000000)
+#define PHY_BCR                         ((uint16_t)0x00)    /*!< Transceiver Basic Control Register   */
+#define PHY_BSR                         ((uint16_t)0x01)    /*!< Transceiver Basic Status Register    */
 
-/* FLASH definitions */
-#define FLASH_LATENCY_1                 ((uint32_t)0x00000001)
+#define PHY_RESET                       ((uint16_t)0x8000)  /*!< PHY Reset */
+#define PHY_LOOPBACK                    ((uint16_t)0x4000)  /*!< Select loop-back mode */
+#define PHY_FULLDUPLEX_100M             ((uint16_t)0x2100)  /*!< Set the full-duplex mode at 100 Mb/s */
+#define PHY_HALFDUPLEX_100M             ((uint16_t)0x2000)  /*!< Set the half-duplex mode at 100 Mb/s */
+#define PHY_FULLDUPLEX_10M              ((uint16_t)0x0100)  /*!< Set the full-duplex mode at 10 Mb/s  */
+#define PHY_HALFDUPLEX_10M              ((uint16_t)0x0000)  /*!< Set the half-duplex mode at 10 Mb/s  */
+#define PHY_AUTONEGOTIATION             ((uint16_t)0x1000)  /*!< Enable auto-negotiation function     */
+#define PHY_RESTART_AUTONEGOTIATION     ((uint16_t)0x0200)  /*!< Restart auto-negotiation function    */
+#define PHY_POWERDOWN                   ((uint16_t)0x0800)  /*!< Select the power down mode           */
+#define PHY_ISOLATE                     ((uint16_t)0x0400)  /*!< Isolate PHY from MII                 */
+
+#define PHY_AUTONEGO_COMPLETE           ((uint16_t)0x0020)  /*!< Auto-Negotiation process completed   */
+#define PHY_LINKED_STATUS               ((uint16_t)0x0004)  /*!< Valid link established               */
+#define PHY_JABBER_DETECTION            ((uint16_t)0x0002)  /*!< Jabber condition detected            */
+
+/* Section 4: Extended PHY Registers */
+#define PHY_SR                          ((uint16_t)0x10U)    /*!< PHY status register Offset                      */
+
+#define PHY_SPEED_STATUS                ((uint16_t)0x0002U)  /*!< PHY Speed mask                                  */
+#define PHY_DUPLEX_STATUS               ((uint16_t)0x0004U)  /*!< PHY Duplex mask                                 */
 
 /* ################## SPI peripheral configuration ########################## */
 
@@ -250,7 +259,7 @@
 #endif /* HAL_CAN_MODULE_ENABLED */
 
 #ifdef HAL_CAN_LEGACY_MODULE_ENABLED
-#include "stm32f1xx_hal_can_legacy.h"
+  #include "Legacy/stm32f1xx_hal_can_legacy.h"
 #endif /* HAL_CAN_LEGACY_MODULE_ENABLED */
 
 #ifdef HAL_CEC_MODULE_ENABLED
