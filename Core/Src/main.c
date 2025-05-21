@@ -147,6 +147,13 @@ int main(void)
       const GPS_Data* gps_data = GPS_GetData();
       
       if (imu_data != NULL && gps_data != NULL) {
+        // Обновляем yaw в IMU данных из GPS курса
+        if (GPS_HasValidCourse()) {
+            ((IMU_Data*)imu_data)->yaw = gps_data->course;
+        } else if (GPS_GetLastKnownCourse() != 0.0f) {
+            ((IMU_Data*)imu_data)->yaw = GPS_GetLastKnownCourse();
+        }
+        
         USB_CDC_SendTelemetry(imu_data, gps_data);
       }
       

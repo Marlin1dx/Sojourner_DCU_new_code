@@ -12,6 +12,12 @@ static uint16_t buffer_index = 0;
 // Данные GPS
 static GPS_Data gps_data;
 
+// Данные о последнем известном курсе
+static struct {
+    float last_course;
+    uint8_t is_valid;
+} course_data = {0.0f, 0};
+
 // Дескриптор UART
 // UART_HandleTypeDef huart2;
 
@@ -185,6 +191,11 @@ void GPS_Init(void) {
 
 void GPS_Update(void) {
     // Обновление происходит в прерывании
+    // Обновляем статус курса
+    if (gps_data.fix > 0 && gps_data.speed > 1.0f) {
+        course_data.last_course = gps_data.course;
+        course_data.is_valid = 1;
+    }
 }
 
 const GPS_Data* GPS_GetData(void) {
@@ -193,6 +204,14 @@ const GPS_Data* GPS_GetData(void) {
 
 uint8_t GPS_HasValidData(void) {
     return (gps_data.fix > 0);
+}
+
+float GPS_GetLastKnownCourse(void) {
+    return course_data.last_course;
+}
+
+uint8_t GPS_HasValidCourse(void) {
+    return course_data.is_valid && gps_data.fix > 0 && gps_data.speed > 1.0f;
 }
 
 // Обработка данных GPS через UART

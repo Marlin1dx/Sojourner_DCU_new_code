@@ -32,6 +32,12 @@ const GPS_Data* GPS_GetData(void);
 // Проверка наличия валидных данных
 uint8_t GPS_HasValidData(void);
 
+// Получение последнего известного курса
+float GPS_GetLastKnownCourse(void);
+
+// Проверка валидности курса (скорость > 1 м/с)
+uint8_t GPS_HasValidCourse(void);
+
 // Обработка UART для GPS
 void GPS_ProcessUART(void);
 

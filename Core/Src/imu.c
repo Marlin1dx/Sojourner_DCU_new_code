@@ -126,7 +126,7 @@ void IMU_Update(void) {
         sqrtf(imu_data.accel_y * imu_data.accel_y + 
               imu_data.accel_z * imu_data.accel_z)) * 180.0f / 3.14159f;
     
-    // Yaw не может быть точно определен без магнитометра
+    // Yaw устанавливается из GPS в main.c
     imu_data.yaw = 0.0f;
 }
 
