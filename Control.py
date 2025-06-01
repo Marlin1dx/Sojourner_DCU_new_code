@@ -5,7 +5,7 @@ import threading
 import time
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, 
                              QLabel, QPushButton, QComboBox, QTextEdit, 
-                             QWidget, QGridLayout, QSlider)
+                             QWidget, QGridLayout)
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QKeyEvent, QFont
 
@@ -30,40 +30,28 @@ class RobotControlPanel(QMainWindow):
         # Создание кнопок управления движением
         movement_layout = QGridLayout()
         
-        # Стрелки
-        self.btn_forward = QPushButton("↑ Вперед")
-        self.btn_backward = QPushButton("↓ Назад")
-        self.btn_left = QPushButton("← Влево")
-        self.btn_right = QPushButton("→ Вправо")
+        # Кнопки движения
+        self.btn_forward = QPushButton("↑ Движение вперед")
+        self.btn_backward = QPushButton("↓ Движение назад")
+        self.btn_rotate_left = QPushButton("⟲ Поворот налево")
+        self.btn_rotate_right = QPushButton("⟳ Поворот направо")
         
         # Кнопка остановки
         self.btn_stop = QPushButton("■ Стоп")
         self.btn_stop.setStyleSheet("background-color: red; color: white;")
-        
-        # Настройка скорости
-        speed_layout = QHBoxLayout()
-        self.speed_label = QLabel("Скорость: 50%")
-        self.speed_slider = QSlider(Qt.Horizontal)
-        self.speed_slider.setRange(0, 100)
-        self.speed_slider.setValue(50)
-        self.speed_slider.valueChanged.connect(self.update_speed)
-        
-        speed_layout.addWidget(QLabel("Скорость"))
-        speed_layout.addWidget(self.speed_slider)
-        speed_layout.addWidget(self.speed_label)
 
         # Размещение кнопок
         movement_layout.addWidget(self.btn_forward, 0, 1)
-        movement_layout.addWidget(self.btn_left, 1, 0)
+        movement_layout.addWidget(self.btn_rotate_left, 1, 0)
         movement_layout.addWidget(self.btn_stop, 1, 1)
-        movement_layout.addWidget(self.btn_right, 1, 2)
+        movement_layout.addWidget(self.btn_rotate_right, 1, 2)
         movement_layout.addWidget(self.btn_backward, 2, 1)
 
         # Подключение обработчиков
         self.btn_forward.pressed.connect(lambda: self.send_movement_command('forward'))
         self.btn_backward.pressed.connect(lambda: self.send_movement_command('backward'))
-        self.btn_left.pressed.connect(lambda: self.send_movement_command('left'))
-        self.btn_right.pressed.connect(lambda: self.send_movement_command('right'))
+        self.btn_rotate_left.pressed.connect(lambda: self.send_movement_command('rotate_left'))
+        self.btn_rotate_right.pressed.connect(lambda: self.send_movement_command('rotate_right'))
         self.btn_stop.pressed.connect(lambda: self.send_movement_command('stop'))
 
         # Порт и кнопка подключения
@@ -84,9 +72,9 @@ class RobotControlPanel(QMainWindow):
         telemetry_labels = [
             "Гироскоп X", "Гироскоп Y", "Гироскоп Z",
             "Акселерометр X", "Акселерометр Y", "Акселерометр Z",
-            "Магнитометр X", "Магнитометр Y", "Магнитометр Z",
             "Roll", "Pitch", "Yaw",
             "Широта", "Долгота", "Высота",
+            "Скорость", "Course over ground",
             "Угол ALF", "Угол ALR", "Угол ARF", "Угол ARR"
         ]
 
@@ -105,7 +93,6 @@ class RobotControlPanel(QMainWindow):
 
         # Компоновка
         control_layout.addLayout(movement_layout)
-        control_layout.addLayout(speed_layout)
         control_layout.addLayout(port_layout)
 
         main_layout.addWidget(control_widget)
@@ -114,7 +101,6 @@ class RobotControlPanel(QMainWindow):
 
         # Настройка портов
         self.serial_port = None
-        self.current_speed = 50
         self.refresh_ports()
         self.refresh_ports_button.clicked.connect(self.refresh_ports)
         self.connect_button.clicked.connect(self.toggle_connection)
@@ -131,34 +117,27 @@ class RobotControlPanel(QMainWindow):
         elif event.key() == Qt.Key_S:
             self.send_movement_command('backward')
         elif event.key() == Qt.Key_A:
-            self.send_movement_command('left')
+            self.send_movement_command('rotate_left')
         elif event.key() == Qt.Key_D:
-            self.send_movement_command('right')
+            self.send_movement_command('rotate_right')
         elif event.key() == Qt.Key_Space:
             self.send_movement_command('stop')
-
-    def update_speed(self, value):
-        self.current_speed = value
-        self.speed_label.setText(f"Скорость: {value}%")
 
     def send_movement_command(self, direction):
         if not self.serial_port or not self.serial_port.is_open:
             self.log("Порт не подключен")
             return
-
-        # Преобразуем направление и скорость в команду
-        speed = self.current_speed
         
-        # Команды для моторов (пример, адаптируйте под вашу кинематику)
+        # Команды для движения с использованием course over ground
         commands = {
-            'forward':   f"M0:{speed},M1:{speed},M2:{speed},M3:{speed}",
-            'backward':  f"M0:{-speed},M1:{-speed},M2:{-speed},M3:{-speed}",
-            'left':     f"M0:{-speed},M1:{speed},M2:{speed},M3:{-speed}",
-            'right':    f"M0:{speed},M1:{-speed},M2:{-speed},M3:{speed}",
-            'stop':     "M0:0,M1:0,M2:0,M3:0"
+            'forward':      "MOVE:FORWARD",
+            'backward':     "MOVE:BACKWARD",
+            'rotate_left':  "MOVE:ROTATE_LEFT",
+            'rotate_right': "MOVE:ROTATE_RIGHT",
+            'stop':        "MOVE:STOP"
         }
 
-        command = commands.get(direction, 'stop')
+        command = commands.get(direction, 'MOVE:STOP')
         
         try:
             self.serial_port.write((command + '\n').encode())
@@ -209,16 +188,14 @@ class RobotControlPanel(QMainWindow):
             imu_labels = [
                 "Гироскоп X", "Гироскоп Y", "Гироскоп Z",
                 "Акселерометр X", "Акселерометр Y", "Акселерометр Z",
-                "Магнитометр X", "Магнитометр Y", "Магнитометр Z",
-                "Roll", "Pitch", "Yaw", "Температура"
+                "Roll", "Pitch", "Yaw"
             ]
             
             # Парсинг GPS
             gps_values = gps_data.split(':')[1].split(',')
             gps_labels = [
-                "Широта", "Долгота", "Высота", "Скорость", "Курс",
-                "Спутники", "Фикс", "Час", "Минута", "Секунда",
-                "День", "Месяц", "Год"
+                "Широта", "Долгота", "Высота", "Скорость", "Course over ground",
+                "Спутники", "Фикс"
             ]
             
             # Парсинг углов Холла
