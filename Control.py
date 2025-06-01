@@ -5,7 +5,7 @@ import threading
 import time
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, 
                              QLabel, QPushButton, QComboBox, QTextEdit, 
-                             QWidget, QGridLayout)
+                             QWidget, QGridLayout, QProgressBar)
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QKeyEvent, QFont, QColor
 

@@ -64,8 +64,8 @@ all: main-build
 main-build: Sojourner_DCU.elf secondary-outputs
 
 # Tool invocations
-Sojourner_DCU.elf Sojourner_DCU.map: $(OBJS) $(USER_OBJS) C:\Users\snegd\STM32CubeIDE\workspace_1.18.1\Sojourner_DCU\STM32F103C8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "Sojourner_DCU.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"C:\Users\snegd\STM32CubeIDE\workspace_1.18.1\Sojourner_DCU\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Sojourner_DCU.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Sojourner_DCU.elf Sojourner_DCU.map: $(OBJS) $(USER_OBJS) C:\Users\Marlin\Desktop\Sojourner_DCU_new_code\STM32F103C8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "Sojourner_DCU.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"C:\Users\Marlin\Desktop\Sojourner_DCU_new_code\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Sojourner_DCU.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
