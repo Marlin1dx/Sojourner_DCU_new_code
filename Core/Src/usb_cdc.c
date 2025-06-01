@@ -64,10 +64,16 @@ void USB_CDC_ProcessReceivedData(void) {
 }
 
 void USB_CDC_SendTelemetry(const IMU_Data* imu, const GPS_Data* gps) {
+    // Проверяем валидность указателей
+    if (!imu || !gps) {
+        return;
+    }
+
+    // Форматируем с фиксированной точностью для лучшей читаемости
     int len = snprintf((char*)tx_buffer, USB_CDC_TX_BUFFER_SIZE,
-        "IMU:%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g|"
-        "GPS:%g,%g,%g,%g,%g,%d,%d,%02d:%02d:%02d,%02d/%02d/%04d|"
-        "HALL:%g,%g,%g,%g\n",
+        "IMU:%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.1f,%.2f,%.2f,%.2f|"
+        "GPS:%.6f,%.6f,%.2f,%.2f,%.1f,%d,%d,%02d:%02d:%02d,%02d/%02d/%04d|"
+        "HALL:%.1f,%.1f,%.1f,%.1f\n",
         imu->accel_x, imu->accel_y, imu->accel_z,
         imu->gyro_x, imu->gyro_y, imu->gyro_z,
         imu->mag_x, imu->mag_y, imu->mag_z,

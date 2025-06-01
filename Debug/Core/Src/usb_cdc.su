@@ -2,6 +2,6 @@
 ../Core/Src/usb_cdc.c:44:6:USB_CDC_SendData	16	static
 ../Core/Src/usb_cdc.c:54:6:USB_CDC_ProcessReceivedData	0	static
 ../Core/Src/usb_cdc.c:66:6:USB_CDC_SendTelemetry	416	static
-../Core/Src/usb_cdc.c:92:6:USB_CDC_ReceiveCallback	0	static
-../Core/Src/usb_cdc.c:98:6:HAL_PCD_DataOutStageCallback	0	static
-../Core/Src/usb_cdc.c:104:6:HAL_PCD_DataInStageCallback	0	static
+../Core/Src/usb_cdc.c:98:6:USB_CDC_ReceiveCallback	0	static
+../Core/Src/usb_cdc.c:104:6:HAL_PCD_DataOutStageCallback	0	static
+../Core/Src/usb_cdc.c:110:6:HAL_PCD_DataInStageCallback	0	static

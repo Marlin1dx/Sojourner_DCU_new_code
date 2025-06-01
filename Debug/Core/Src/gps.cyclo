@@ -1,6 +1,8 @@
-../Core/Src/gps.c:153:6:HAL_UART_RxCpltCallback	22
-../Core/Src/gps.c:175:6:GPS_Init	1
-../Core/Src/gps.c:186:6:GPS_Update	1
-../Core/Src/gps.c:190:17:GPS_GetData	1
-../Core/Src/gps.c:194:9:GPS_HasValidData	1
-../Core/Src/gps.c:199:6:GPS_ProcessUART	1
+../Core/Src/gps.c:159:6:HAL_UART_RxCpltCallback	22
+../Core/Src/gps.c:181:6:GPS_Init	1
+../Core/Src/gps.c:192:6:GPS_Update	3
+../Core/Src/gps.c:201:17:GPS_GetData	1
+../Core/Src/gps.c:205:9:GPS_HasValidData	1
+../Core/Src/gps.c:209:7:GPS_GetLastKnownCourse	1
+../Core/Src/gps.c:213:9:GPS_HasValidCourse	3
+../Core/Src/gps.c:218:6:GPS_ProcessUART	1

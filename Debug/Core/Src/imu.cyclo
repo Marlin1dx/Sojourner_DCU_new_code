@@ -1,6 +1,8 @@
-../Core/Src/imu.c:138:6:IMU_Init	4
-../Core/Src/imu.c:156:6:IMU_Update	2
-../Core/Src/imu.c:219:17:IMU_GetData	1
-../Core/Src/imu.c:223:6:IMU_Calibrate	1
-../Core/Src/imu.c:231:6:IMU_ProcessI2C	1
-../Core/Src/imu.c:232:6:IMU_ProcessError	1
+../Core/Src/imu.c:49:9:IMU_IsDataValid	8
+../Core/Src/imu.c:67:9:IMU_IsInitialized	1
+../Core/Src/imu.c:120:6:IMU_Init	2
+../Core/Src/imu.c:139:6:IMU_Update	10
+../Core/Src/imu.c:203:17:IMU_GetData	1
+../Core/Src/imu.c:207:6:IMU_Calibrate	3
+../Core/Src/imu.c:248:6:IMU_ProcessI2C	1
+../Core/Src/imu.c:249:6:IMU_ProcessError	1

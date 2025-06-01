@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QVBoxLayout, QHBoxLayout
                              QLabel, QPushButton, QComboBox, QTextEdit, 
                              QWidget, QGridLayout)
 from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtGui import QKeyEvent, QFont
+from PyQt5.QtGui import QKeyEvent, QFont, QColor
 
 class RobotControlPanel(QMainWindow):
     def __init__(self):
@@ -27,7 +27,7 @@ class RobotControlPanel(QMainWindow):
         control_layout = QVBoxLayout()
         control_widget.setLayout(control_layout)
 
-        # Создание кнопок управления движением
+        # Управление движением
         movement_layout = QGridLayout()
         
         # Кнопки движения
@@ -47,7 +47,7 @@ class RobotControlPanel(QMainWindow):
         movement_layout.addWidget(self.btn_rotate_right, 1, 2)
         movement_layout.addWidget(self.btn_backward, 2, 1)
 
-        # Подключение обработчиков
+        # Обработчики
         self.btn_forward.pressed.connect(lambda: self.send_movement_command('forward'))
         self.btn_backward.pressed.connect(lambda: self.send_movement_command('backward'))
         self.btn_rotate_left.pressed.connect(lambda: self.send_movement_command('rotate_left'))
@@ -69,6 +69,14 @@ class RobotControlPanel(QMainWindow):
         telemetry_layout = QGridLayout()
         telemetry_widget.setLayout(telemetry_layout)
 
+        # Индикатор качества GPS сигнала
+        self.gps_signal_bar = QProgressBar()
+        self.gps_signal_bar.setRange(0, 12)  # Максимум 12 спутников
+        self.gps_signal_bar.setTextVisible(True)
+        self.gps_signal_bar.setFormat("%v спутников")
+        telemetry_layout.addWidget(QLabel("Качество GPS сигнала:"), 0, 0)
+        telemetry_layout.addWidget(self.gps_signal_bar, 0, 1)
+
         telemetry_labels = [
             "Гироскоп X", "Гироскоп Y", "Гироскоп Z",
             "Акселерометр X", "Акселерометр Y", "Акселерометр Z",
@@ -83,8 +91,8 @@ class RobotControlPanel(QMainWindow):
             label = QLabel(label_text)
             value_label = QLabel("N/A")
             value_label.setFont(QFont("Monospace", 9))
-            telemetry_layout.addWidget(label, i, 0)
-            telemetry_layout.addWidget(value_label, i, 1)
+            telemetry_layout.addWidget(label, i + 1, 0)  # +1 из-за добавленного индикатора GPS
+            telemetry_layout.addWidget(value_label, i + 1, 1)
             self.telemetry_values[label_text] = value_label
 
         # Консоль
@@ -109,6 +117,11 @@ class RobotControlPanel(QMainWindow):
         self.update_timer = QTimer()
         self.update_timer.timeout.connect(self.request_telemetry)
         self.update_timer.start(500)  # Опрос каждые 500 мс
+
+        # Переменные для отслеживания GPS
+        self.last_satellite_count = 0
+        self.satellite_change_time = time.time()
+        self.satellite_log_file = open("gps_satellites.log", "a")
 
     def keyPressEvent(self, event: QKeyEvent):
         # Управление с клавиатуры
@@ -179,6 +192,47 @@ class RobotControlPanel(QMainWindow):
                 self.log(f"Ошибка чтения: {e}")
                 break
 
+    def update_gps_signal_indicator(self, satellite_count):
+        try:
+            count = int(satellite_count)
+            self.gps_signal_bar.setValue(count)
+            
+            # Изменение цвета в зависимости от количества спутников
+            if count >= 8:
+                color = QColor(0, 255, 0)  # Зеленый
+            elif count >= 5:
+                color = QColor(255, 255, 0)  # Желтый
+            else:
+                color = QColor(255, 0, 0)  # Красный
+            
+            self.gps_signal_bar.setStyleSheet(f"""
+                QProgressBar {{
+                    border: 2px solid grey;
+                    border-radius: 5px;
+                    text-align: center;
+                }}
+                QProgressBar::chunk {{
+                    background-color: {color.name()};
+                }}
+            """)
+            
+            # Логирование изменений количества спутников
+            if count != self.last_satellite_count:
+                current_time = time.time()
+                if current_time - self.satellite_change_time > 2:  # Минимальный интервал 2 секунды
+                    self.log(f"Изменение количества спутников: {self.last_satellite_count} -> {count}")
+                    self.satellite_change_time = current_time
+                    
+                    # Логирование в файл
+                    timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+                    self.satellite_log_file.write(f"{timestamp}: Спутники {self.last_satellite_count} -> {count}\n")
+                    self.satellite_log_file.flush()
+                
+                self.last_satellite_count = count
+                
+        except ValueError:
+            pass
+
     def parse_telemetry(self, data):
         try:
             imu_data, gps_data, hall_data = data.split('|')
@@ -208,6 +262,8 @@ class RobotControlPanel(QMainWindow):
             
             for label, value in zip(gps_labels, gps_values):
                 self.telemetry_values[label].setText(value)
+                if label == "Спутники":
+                    self.update_gps_signal_indicator(value)
             
             for label, value in zip(hall_labels, hall_values):
                 self.telemetry_values[label].setText(value)
@@ -217,6 +273,12 @@ class RobotControlPanel(QMainWindow):
 
     def log(self, message):
         self.console.append(message)
+
+    def closeEvent(self, event):
+        # Закрытие файла лога при закрытии приложения
+        if hasattr(self, 'satellite_log_file'):
+            self.satellite_log_file.close()
+        event.accept()
 
 def main():
     app = QApplication(sys.argv)

@@ -26,6 +26,48 @@ static struct {
     float accel_offset[3];
 } calibration;
 
+static uint8_t imu_initialized = 0;
+static uint32_t last_update = 0;
+static uint8_t consecutive_errors = 0;
+#define MAX_CONSECUTIVE_ERRORS 5
+#define IMU_UPDATE_TIMEOUT 100 // ms
+
+static uint8_t CheckSensorLimits(float ax, float ay, float az, float gx, float gy, float gz) {
+    // Проверка пределов акселерометра (±4g в единицах g)
+    if (fabsf(ax) > 4.0f || fabsf(ay) > 4.0f || fabsf(az) > 4.0f) {
+        return 0;
+    }
+    
+    // Проверка пределов гироскопа (±500°/s)
+    if (fabsf(gx) > 500.0f || fabsf(gy) > 500.0f || fabsf(gz) > 500.0f) {
+        return 0;
+    }
+    
+    return 1;
+}
+
+uint8_t IMU_IsDataValid(void) {
+    if (!imu_initialized) {
+        return 0;
+    }
+    
+    // Проверка таймаута обновления данных
+    if (HAL_GetTick() - last_update > IMU_UPDATE_TIMEOUT) {
+        return 0;
+    }
+    
+    // Проверка показаний на выход за пределы
+    const IMU_Data* data = IMU_GetData();
+    return CheckSensorLimits(
+        data->accel_x, data->accel_y, data->accel_z,
+        data->gyro_x, data->gyro_y, data->gyro_z
+    );
+}
+
+uint8_t IMU_IsInitialized(void) {
+    return imu_initialized;
+}
+
 // Инициализация I2C
 static void I2C_Init(void) {
     hi2c1.Instance = I2C1;
@@ -62,17 +104,16 @@ static void MPU6050_Init(void) {
     // Настройка частоты дискретизации
     data = 0x07; // 1kHz / (1 + 7) = 125Hz
     HAL_I2C_Mem_Write(&hi2c1, MPU6050_ADDR << 1, MPU6050_SMPLRT_DIV, 1, &data, 1, 100);
-    
-    // Настройка фильтра
-    data = 0x03; // Фильтр 44Hz для гироскопа и акселерометра
+      // Настройка фильтра DLPF (Digital Low Pass Filter)
+    data = 0x03; // Bandwidth 44Hz для гироскопа и акселерометра
     HAL_I2C_Mem_Write(&hi2c1, MPU6050_ADDR << 1, MPU6050_CONFIG, 1, &data, 1, 100);
     
     // Настройка гироскопа
-    data = 0x18; // ±2000°/с
+    data = 0x08; // ±500°/с для более точных измерений
     HAL_I2C_Mem_Write(&hi2c1, MPU6050_ADDR << 1, MPU6050_GYRO_CONFIG, 1, &data, 1, 100);
     
     // Настройка акселерометра
-    data = 0x18; // ±16g
+    data = 0x08; // ±4g для более точных измерений
     HAL_I2C_Mem_Write(&hi2c1, MPU6050_ADDR << 1, MPU6050_ACCEL_CONFIG, 1, &data, 1, 100);
 }
 
@@ -88,35 +129,58 @@ void IMU_Init(void) {
         calibration.gyro_offset[i] = 0.0f;
         calibration.accel_offset[i] = 0.0f;
     }
+    
+    // В конце успешной инициализации:
+    imu_initialized = 1;
+    consecutive_errors = 0;
+    last_update = HAL_GetTick();
 }
 
 void IMU_Update(void) {
+    if (!imu_initialized) {
+        return;
+    }
+
     uint8_t data[14];
     int16_t raw;
+    HAL_StatusTypeDef status;
     
     // Чтение всех данных за один раз (акселерометр, температура, гироскоп)
-    HAL_I2C_Mem_Read(&hi2c1, MPU6050_ADDR << 1, MPU6050_ACCEL_XOUT_H, 1, data, 14, 100);
+    status = HAL_I2C_Mem_Read(&hi2c1, MPU6050_ADDR << 1, MPU6050_ACCEL_XOUT_H, 1, data, 14, 100);
     
-    // Обработка данных акселерометра
+    if (status != HAL_OK) {
+        consecutive_errors++;
+        if (consecutive_errors >= MAX_CONSECUTIVE_ERRORS) {
+            imu_initialized = 0; // Требуется реинициализация
+        }
+        return;
+    }
+      // Обработка данных акселерометра (для ±4g, LSB = 8192/4 = 2048 LSB/g)
     raw = (data[0] << 8) | data[1];
-    imu_data.accel_x = (raw / 2048.0f) - calibration.accel_offset[0]; // для ±16g
+    imu_data.accel_x = (raw / 8192.0f) - calibration.accel_offset[0];
     raw = (data[2] << 8) | data[3];
-    imu_data.accel_y = (raw / 2048.0f) - calibration.accel_offset[1];
+    imu_data.accel_y = (raw / 8192.0f) - calibration.accel_offset[1];
     raw = (data[4] << 8) | data[5];
-    imu_data.accel_z = (raw / 2048.0f) - calibration.accel_offset[2];
+    imu_data.accel_z = (raw / 8192.0f) - calibration.accel_offset[2];
     
-    // Обработка данных температуры
+    // Обработка данных температуры (MPU-6050 формула)
     raw = (data[6] << 8) | data[7];
     imu_data.temp = (raw / 340.0f) + 36.53f;
     
-    // Обработка данных гироскопа
+    // Обработка данных гироскопа (для ±500°/с, LSB = 65.5)
     raw = (data[8] << 8) | data[9];
-    imu_data.gyro_x = (raw / 16.4f) - calibration.gyro_offset[0]; // для ±2000°/с
+    imu_data.gyro_x = (raw / 65.5f) - calibration.gyro_offset[0];
     raw = (data[10] << 8) | data[11];
-    imu_data.gyro_y = (raw / 16.4f) - calibration.gyro_offset[1];
+    imu_data.gyro_y = (raw / 65.5f) - calibration.gyro_offset[1];
     raw = (data[12] << 8) | data[13];
-    imu_data.gyro_z = (raw / 16.4f) - calibration.gyro_offset[2];
-    
+    imu_data.gyro_z = (raw / 65.5f) - calibration.gyro_offset[2];
+      // Проверяем данные на валидность
+    if (!CheckSensorLimits(imu_data.accel_x, imu_data.accel_y, imu_data.accel_z,
+                          imu_data.gyro_x, imu_data.gyro_y, imu_data.gyro_z)) {
+        consecutive_errors++;
+        return;
+    }
+
     // Вычисление углов ориентации
     // Roll (крен)
     imu_data.roll = atan2f(imu_data.accel_y, imu_data.accel_z) * 180.0f / 3.14159f;
@@ -128,6 +192,12 @@ void IMU_Update(void) {
     
     // Yaw устанавливается из GPS в main.c
     imu_data.yaw = 0.0f;
+    
+    // Обновляем статус успешного чтения
+    consecutive_errors = 0;
+    last_update = HAL_GetTick();
+    
+    last_update = HAL_GetTick();
 }
 
 const IMU_Data* IMU_GetData(void) {
@@ -176,4 +246,4 @@ void IMU_Calibrate(void) {
 }
 
 void IMU_ProcessI2C(void) {}
-void IMU_ProcessError(void) {} 
+void IMU_ProcessError(void) {}

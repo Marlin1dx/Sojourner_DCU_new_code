@@ -23,4 +23,10 @@ void IMU_ProcessI2C(void);
 // Обработка ошибок I2C
 void IMU_ProcessError(void);
 
-#endif // IMU_H 
+// Проверка валидности данных IMU
+uint8_t IMU_IsDataValid(void);
+
+// Получение состояния инициализации
+uint8_t IMU_IsInitialized(void);
+
+#endif // IMU_H

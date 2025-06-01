@@ -136,17 +136,21 @@ int main(void)
   while (1)
   {
     uint32_t current_time = HAL_GetTick();
-    
-    // Обновление данных IMU и GPS
+      // Обновление данных IMU и GPS
     IMU_Update();
     GPS_Update();
+    
+    // Проверка состояния IMU
+    if (!IMU_IsInitialized()) {
+        IMU_Init(); // Попытка переинициализации
+    }
     
     // Отправка телеметрии
     if (current_time - last_telemetry >= TELEMETRY_INTERVAL) {
       const IMU_Data* imu_data = IMU_GetData();
       const GPS_Data* gps_data = GPS_GetData();
       
-      if (imu_data != NULL && gps_data != NULL) {
+      if (imu_data != NULL && gps_data != NULL && IMU_IsDataValid()) {
         // Обновляем yaw в IMU данных из GPS курса
         if (GPS_HasValidCourse()) {
             ((IMU_Data*)imu_data)->yaw = gps_data->course;
